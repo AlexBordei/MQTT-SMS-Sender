@@ -30,6 +30,7 @@ public class MQTTService extends Service {
     MqttClient mqttClient;
     MQTTHelper mqttHelper;
     Thread thread;
+    boolean firstMesageSent = false;
     boolean stopped = false;
     int qos             =  1;
     String pubID        = "AndroidAPP";
@@ -48,35 +49,39 @@ public class MQTTService extends Service {
 
             @Override
             public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
-                String[] data = mqttMessage.toString().split("#");
-                if(data.length == 3) {
-                    Log.d("MQTT", "message is here: " + mqttMessage);
-                    Integer id = Integer.parseInt(data[0]);
-                    phoneNo = data[1];
-                    message = data[2];
-                    try {
-                        SMSHandler smsHandler = new SMSHandler(getApplicationContext());
-                        smsHandler.sendSMS(phoneNo, message);
-                        Thread.sleep(5000);
-                        if(smsHandler.getSentStatus()) {
-                            Log.d("MQTT", "Message Sent");
-                            HTTPHelper $httpHelper;
-                            $httpHelper = new HTTPHelper(getApplicationContext());
-                            $httpHelper.sendSMSStatus(id, "sent", "");
-                        } else {
-                            Log.d("MQTT", smsHandler.getError());
-                            HTTPHelper $httpHelper;
-                            $httpHelper = new HTTPHelper(getApplicationContext());
-                            $httpHelper.sendSMSStatus(id, "error", smsHandler.getError());
-                        }
+                if(firstMesageSent) {
+                    String[] data = mqttMessage.toString().split("#");
+                    if(data.length == 3) {
+                        Log.d("MQTT", "message is here: " + mqttMessage);
+                        Integer id = Integer.parseInt(data[0]);
+                        phoneNo = data[1];
+                        message = data[2];
+                        try {
+                            SMSHandler smsHandler = new SMSHandler(getApplicationContext());
+                            smsHandler.sendSMS(phoneNo, message);
+                            Thread.sleep(5000);
+                            if (smsHandler.getSentStatus()) {
+                                Log.d("MQTT", "Message Sent");
+                                HTTPHelper $httpHelper;
+                                $httpHelper = new HTTPHelper(getApplicationContext());
+                                $httpHelper.sendSMSStatus(id, "sent", "");
+                            } else {
+                                Log.d("MQTT", smsHandler.getError());
+                                HTTPHelper $httpHelper;
+                                $httpHelper = new HTTPHelper(getApplicationContext());
+                                $httpHelper.sendSMSStatus(id, "error", smsHandler.getError());
+                            }
 
-                    } catch (Exception ex) {
-                        Log.e("MQTT", ex.getMessage());
-                        ex.printStackTrace();
-                        HTTPHelper $httpHelper;
-                        $httpHelper = new HTTPHelper(getApplicationContext());
-                        $httpHelper.sendSMSStatus(id, "error", ex.getMessage());
+                        } catch (Exception ex) {
+                            Log.e("MQTT", ex.getMessage());
+                            ex.printStackTrace();
+                            HTTPHelper $httpHelper;
+                            $httpHelper = new HTTPHelper(getApplicationContext());
+                            $httpHelper.sendSMSStatus(id, "error", ex.getMessage());
+                        }
                     }
+                } else {
+                    firstMesageSent = true;
                 }
             }
 
