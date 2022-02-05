@@ -11,14 +11,25 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 public class MQTTHelper {
+    private static MQTTHelper instance = null;
     MqttClient mqttClient;
     String broker;
     String pubID;
 
-    public MQTTHelper( MqttClient MQTTClient, String broker, String pubID) {
+    private MQTTHelper() {
+    }
+
+    public void setInstanceData(MqttClient MQTTClient, String broker, String pubID) {
         this.mqttClient = MQTTClient;
         this.broker = broker;
         this.pubID = pubID;
+    }
+    public static MQTTHelper getInstance()
+    {
+        if (instance == null) {
+            instance = new MQTTHelper();
+        }
+        return instance;
     }
 
     public void connect() {
@@ -26,7 +37,7 @@ public class MQTTHelper {
         try {
             mqttClient = new MqttClient(broker, pubID, persistence);
             MqttConnectOptions connOpts = new MqttConnectOptions();
-            connOpts.setCleanSession(true);
+            connOpts.setCleanSession(false);
             connOpts.setConnectionTimeout(60);
             connOpts.setKeepAliveInterval(60);
             connOpts.setMqttVersion(MqttConnectOptions.MQTT_VERSION_3_1);
@@ -47,6 +58,10 @@ public class MQTTHelper {
         mqttClient.subscribe(topic, qos);
 
         mqttClient.setCallback(callback);
+    }
+
+    public void disconnect() throws MqttException {
+        mqttClient.disconnect();
     }
 
 }

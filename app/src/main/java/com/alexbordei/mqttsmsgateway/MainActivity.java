@@ -5,10 +5,13 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -16,56 +19,31 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements  View.OnClickListener {
+
+    // declaring objects of Button class
+    private Button start, stop;
+
     private static final int MY_PERMISSIONS_REQUEST_SEND_SMS = 0;
-
-    String phoneNo;
-    String message;
-    MqttCallback mqttCallback;
-    MqttClient mqttClient;
-    MQTTHelper mqttHelper;
-
-    int qos             =  0;
-    String pubID        = "AndroidAPP";
-    String broker       = "tcp://broker.hivemq.com:1883";
-    String topic        = "/panel/sms";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mqttHelper = new MQTTHelper(mqttClient, broker, pubID);
-        mqttHelper.connect();
-        mqttCallback = new MqttCallback() {
-            @Override
-            public void connectionLost(Throwable cause) {
-                mqttHelper.connect();
-            }
 
-            @Override
-            public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
-                String[] data = mqttMessage.toString().split("#");
-                if(data.length == 2) {
-                    Log.d("MQTT", "message is here: " + mqttMessage);
-                    phoneNo = data[0];
-                    message = data[1];
-                    sendSMSMessage();
-                }
-            }
+        // assigning ID of startButton
+        // to the object start
+        start = (Button) findViewById( R.id.startButton );
 
-            @Override
-            public void deliveryComplete(IMqttDeliveryToken token) {
+        // assigning ID of stopButton
+        // to the object stop
+        stop = (Button) findViewById( R.id.stopButton );
 
-            }
-        };
-        try {
-            mqttHelper.subscribe(topic, qos, mqttCallback);
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void sendSMSMessage() {
+        // declaring listeners for the
+        // buttons to make them respond
+        // correctly according to the process
+        start.setOnClickListener(this);
+        stop.setOnClickListener( this);
 
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.SEND_SMS)
@@ -78,30 +56,25 @@ public class MainActivity extends AppCompatActivity {
                         MY_PERMISSIONS_REQUEST_SEND_SMS);
             }
         }
-        try {
-            SmsManager smsManager = SmsManager.getDefault();
-            smsManager.sendTextMessage(phoneNo, null, message, null, null);
-            Log.d("MQTT", "Message Sent");
-
-        } catch (Exception ex) {
-            Log.e("MQTT", ex.getMessage());
-            ex.printStackTrace();
-        }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_SEND_SMS: {
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    SmsManager smsManager = SmsManager.getDefault();
-                    smsManager.sendTextMessage(phoneNo, null, message, null, null);
-                    Log.d("MQTT", "SMS sent.");
-                } else {
-                    Log.d("MQTT", "SMS failed, please try again.");
-                }
-            }
+    public void onClick(View view) {
+
+        // process to be performed
+        // if start button is clicked
+        if(view == start){
+            // starting the service
+            startService(new Intent( this, MQTTService.class ) );
+            start.setEnabled(false);
+        }
+
+        // process to be performed
+        // if stop button is clicked
+        else if (view == stop){
+
+            // stopping the service
+            stopService(new Intent( this, MQTTService.class ) );
+            start.setEnabled(true);
         }
     }
 }

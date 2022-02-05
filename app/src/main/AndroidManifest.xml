@@ -19,6 +19,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- Mention the service name here -->
+        <service android:name=".MQTTService"/>
+
     </application>
 
 </manifest>
