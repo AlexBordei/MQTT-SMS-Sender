@@ -3,6 +3,8 @@
     package="com.alexbordei.mqttsmsgateway">
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -21,7 +23,13 @@
         </activity>
         <!-- Mention the service name here -->
         <service android:name=".MQTTService"/>
+        <receiver android:name=".MQTTBroadcastReceiver" android:exported="true" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED">
 
+                </action>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

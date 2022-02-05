@@ -1,12 +1,17 @@
 package com.alexbordei.mqttsmsgateway;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.util.Log;
@@ -23,9 +28,10 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
 
     // declaring objects of Button class
     private Button start, stop;
-
+    private boolean serviceEnabled = false;
     private static final int MY_PERMISSIONS_REQUEST_SEND_SMS = 0;
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,7 +49,9 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
         // buttons to make them respond
         // correctly according to the process
         start.setOnClickListener(this);
+        start.setEnabled(serviceEnabled);
         stop.setOnClickListener( this);
+        stop.setEnabled(serviceEnabled);
 
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.SEND_SMS)
@@ -56,16 +64,28 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
                         MY_PERMISSIONS_REQUEST_SEND_SMS);
             }
         }
+
+        if(!MQTTServiceRunning()) {
+            start.setEnabled(true);
+        } else {
+            startForegroundService(new Intent( this, MQTTService.class ) );
+            stop.setEnabled(true);
+        }
+
+
+
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void onClick(View view) {
 
         // process to be performed
         // if start button is clicked
         if(view == start){
             // starting the service
-            startService(new Intent( this, MQTTService.class ) );
+            startForegroundService(new Intent( this, MQTTService.class ) );
             start.setEnabled(false);
+            stop.setEnabled(true);
         }
 
         // process to be performed
@@ -74,7 +94,18 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
 
             // stopping the service
             stopService(new Intent( this, MQTTService.class ) );
+            stop.setEnabled(false);
             start.setEnabled(true);
         }
+    }
+
+    public boolean MQTTServiceRunning(){
+        ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for(ActivityManager.RunningServiceInfo service: activityManager.getRunningServices(Integer.MAX_VALUE)) {
+            if(MQTTService.class.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

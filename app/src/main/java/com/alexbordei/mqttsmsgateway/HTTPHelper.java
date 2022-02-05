@@ -20,7 +20,7 @@ public class HTTPHelper {
     }
     public void sendSMSStatus(Integer id, String status, String errorMessage) {
         RequestQueue queue = Volley.newRequestQueue(this.context);
-        String url ="https://4c98-2a02-2f00-300c-b700-a8bc-6232-fdad-a84e.ngrok.io/api/sms/" + id.toString();
+        String url ="https://admin.voltajacademy.ro/api/sms/" + id.toString();
 
         StringRequest postRequest = new StringRequest(Request.Method.POST, url,
                 response -> {
@@ -43,6 +43,31 @@ public class HTTPHelper {
             }
 
 
+            @Override
+            public Map<String, String> getHeaders() {
+                Map<String, String>  params = new HashMap<String, String>();
+                params.put("Accept", "application/json");
+                params.put("Authorization", "Bearer u8SXbu8qsWuNETpjynaZErDFZIdHErUozVNtxVW2GJnlPJeuTdrGZebKqllg");
+
+                return params;
+            }
+        };
+        queue.add(postRequest);
+    }
+    public void updateSMSServiceStatus() {
+        RequestQueue queue = Volley.newRequestQueue(this.context);
+        String url ="https://admin.voltajacademy.ro/api/service/sms";
+
+        StringRequest postRequest = new StringRequest(Request.Method.POST, url,
+                response -> {
+                    // response
+                    Log.d("Response", response);
+                },
+                error -> {
+                    // error
+                    Log.d("Error.Response", String.valueOf(error));
+                }
+        ) {
             @Override
             public Map<String, String> getHeaders() {
                 Map<String, String>  params = new HashMap<String, String>();

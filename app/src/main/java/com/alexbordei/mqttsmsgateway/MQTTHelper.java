@@ -16,18 +16,16 @@ public class MQTTHelper {
     String broker;
     String pubID;
 
-    private MQTTHelper() {
-    }
-
-    public void setInstanceData(MqttClient MQTTClient, String broker, String pubID) {
+    private MQTTHelper(MqttClient MQTTClient, String broker, String pubID) {
         this.mqttClient = MQTTClient;
         this.broker = broker;
         this.pubID = pubID;
     }
-    public static MQTTHelper getInstance()
+
+    public static MQTTHelper getInstance(MqttClient MQTTClient, String broker, String pubID)
     {
         if (instance == null) {
-            instance = new MQTTHelper();
+            instance = new MQTTHelper(MQTTClient, broker, pubID);
         }
         return instance;
     }
@@ -58,6 +56,14 @@ public class MQTTHelper {
         mqttClient.subscribe(topic, qos);
 
         mqttClient.setCallback(callback);
+    }
+
+    public void unsubscribe(String topic) throws MqttException {
+        mqttClient.unsubscribe(topic);
+    }
+
+    public boolean isConnected() {
+        return mqttClient.isConnected();
     }
 
     public void disconnect() throws MqttException {
