@@ -39,6 +39,7 @@ public class SMSHandler {
         PendingIntent deliveredPI = PendingIntent.getBroadcast(this.context, 0,
                 new Intent(DELIVERED), 0);
 
+
         //---when the SMS has been sent---
         context.registerReceiver(new BroadcastReceiver(){
             @Override

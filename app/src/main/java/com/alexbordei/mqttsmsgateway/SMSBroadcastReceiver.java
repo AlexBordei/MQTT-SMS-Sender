@@ -7,12 +7,12 @@ import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 
-public class MQTTBroadcastReceiver extends BroadcastReceiver {
+public class SMSBroadcastReceiver extends BroadcastReceiver {
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onReceive(Context context, Intent intent) {
         if(intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
-            Intent serviceIntent = new Intent(context, MQTTService.class);
+            Intent serviceIntent = new Intent(context, SMSThreadService.class);
             context.startForegroundService(serviceIntent);
         }
     }

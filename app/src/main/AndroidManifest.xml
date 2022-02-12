@@ -22,8 +22,8 @@
             </intent-filter>
         </activity>
         <!-- Mention the service name here -->
-        <service android:name=".MQTTService"/>
-        <receiver android:name=".MQTTBroadcastReceiver" android:exported="true" >
+        <service android:name=".SMSThreadService"/>
+        <receiver android:name=".SMSBroadcastReceiver" android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED">
 

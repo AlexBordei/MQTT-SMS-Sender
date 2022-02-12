@@ -5,8 +5,6 @@ import android.util.Log;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -14,13 +12,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HTTPHelper {
+    String response;
+    boolean isResponseReady = false;
     Context context;
+
+    public boolean isResponseReady() {
+        return this.isResponseReady;
+    }
+
+    public String getResponse() {
+        return this.response;
+    }
     public HTTPHelper(Context context) {
         this.context = context;
     }
     public void sendSMSStatus(Integer id, String status, String errorMessage) {
         RequestQueue queue = Volley.newRequestQueue(this.context);
-        String url ="https://admin.voltajacademy.ro/api/sms/" + id.toString();
+        String url ="https://ba69-5-12-26-77.ngrok.io/api/sms/" + id.toString();
 
         StringRequest postRequest = new StringRequest(Request.Method.POST, url,
                 response -> {
@@ -56,7 +64,7 @@ public class HTTPHelper {
     }
     public void updateSMSServiceStatus() {
         RequestQueue queue = Volley.newRequestQueue(this.context);
-        String url ="https://admin.voltajacademy.ro/api/service/sms";
+        String url ="https://ba69-5-12-26-77.ngrok.io/api/service/sms";
 
         StringRequest postRequest = new StringRequest(Request.Method.POST, url,
                 response -> {
@@ -78,5 +86,34 @@ public class HTTPHelper {
             }
         };
         queue.add(postRequest);
+    }
+    public void getSMSQueue() {
+        isResponseReady = false;
+        String url = "https://ba69-5-12-26-77.ngrok.io/api/sms";
+        RequestQueue queue = Volley.newRequestQueue(this.context);
+
+        StringRequest getRequest = new StringRequest(Request.Method.GET, url,
+                rsp -> {
+                    // response
+                    Log.d("Response", rsp);
+                    isResponseReady = true;
+                    response = rsp;
+                },
+                error -> {
+                    // error
+                    Log.d("Error.Response", String.valueOf(error));
+                    isResponseReady = true;
+                }
+        ) {
+            @Override
+            public Map<String, String> getHeaders() {
+                Map<String, String>  params = new HashMap<String, String>();
+                params.put("Accept", "application/json");
+                params.put("Authorization", "Bearer u8SXbu8qsWuNETpjynaZErDFZIdHErUozVNtxVW2GJnlPJeuTdrGZebKqllg");
+
+                return params;
+            }
+        };
+        queue.add(getRequest);
     }
 }
